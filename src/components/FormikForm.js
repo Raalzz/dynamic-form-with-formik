@@ -6,7 +6,7 @@ import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";
 
-const DynamicForm = () => {
+const FormikForm = () => {
   const [initialValueState, setInitialValueState] = useState({
     assignedTo: {}
   });
@@ -179,7 +179,7 @@ const DynamicForm = () => {
   );
 };
 
-export default DynamicForm;
+export default FormikForm;
 
 //
 //
