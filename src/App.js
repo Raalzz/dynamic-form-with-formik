@@ -1,10 +1,10 @@
 import React from "react";
-import FormikForm from "./components/FormikForm";
+import DynamicForm from "./components/DynamicForm";
 
 const App = () => {
   return (
     <div>
-      <FormikForm />
+      <DynamicForm />
     </div>
   );
 };
