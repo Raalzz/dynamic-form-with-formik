@@ -6,27 +6,13 @@ import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";
 
-const Options = [
-  {
-    label: "group1",
-    value: "group1"
-  },
-  {
-    label: "group2",
-    value: "group2"
-  },
-  {
-    label: "group3",
-    value: "group3"
-  }
-];
-
 const DynamicForm = () => {
   const [assinedToDeleteMode, setAssinedToDeleteMode] = useState(false);
   const [initialValueState, setInitialValueState] = useState({
     assignedTo: {}
   });
   const [assinedToSchema, setAssinedToSchema] = useState({});
+  const [selectedWorkers, setSelectedWorkers] = useState([]);
 
   //Create Lead Worker initially
   useEffect(() => {
@@ -34,6 +20,25 @@ const DynamicForm = () => {
       addWorkerField(true);
     }
   }, []);
+
+  const OptionsData = [
+    {
+      label: "worker1",
+      value: "worker1"
+    },
+    {
+      label: "worker2",
+      value: "worker2"
+    },
+    {
+      label: "worker3",
+      value: "worker3"
+    }
+  ];
+
+  const Options = () => {
+    return _.xorBy(OptionsData, selectedWorkers, "value");
+  };
 
   //Validation Schema
   const Schema = yup.object().shape({
@@ -85,6 +90,11 @@ const DynamicForm = () => {
 
   //Function to Remove Field
   const removeWorkerField = workerId => {
+    setSelectedWorkers(
+      selectedWorkers.filter(
+        obj => obj.value !== formik.values.assignedTo[workerId].value
+      )
+    );
     let oldSchema = { ...assinedToSchema };
     delete oldSchema[workerId];
     setAssinedToSchema(oldSchema);
@@ -110,19 +120,32 @@ const DynamicForm = () => {
     <form onSubmit={formik.handleSubmit}>
       <h1 style={{ textAlign: "center" }}>Select Form</h1>
       <div>
-        <button
-          type="button"
-          onClick={() => {
-            if (_.size(initialValueState.assignedTo) > 1) {
-              setAssinedToDeleteMode(!assinedToDeleteMode);
-            }
-          }}
-        >
-          - Worker
-        </button>
-        <button type="button" onClick={() => addWorkerField(false)}>
-          + Worker
-        </button>
+        {_.size(formik.values.assignedTo) > 1 ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (_.size(initialValueState.assignedTo) > 1) {
+                setAssinedToDeleteMode(!assinedToDeleteMode);
+              }
+            }}
+          >
+            - Worker
+          </button>
+        ) : (
+          <button type="button" disabled>
+            - Worker
+          </button>
+        )}
+
+        {_.size(formik.values.assignedTo) < OptionsData.length ? (
+          <button type="button" onClick={() => addWorkerField(false)}>
+            + Worker
+          </button>
+        ) : (
+          <button type="button" disabled>
+            + Worker
+          </button>
+        )}
       </div>
       <br />
       <div>
@@ -134,12 +157,25 @@ const DynamicForm = () => {
                   {formik.values.assignedTo[worker].lead ? "Lead" : "Worker"}
                 </label>
                 <Select
-                  options={Options}
+                  options={Options()}
                   onChange={value => {
-                    formik.setFieldValue(`assignedTo.${worker}`, {
-                      ...value,
-                      ...formik.values.assignedTo[worker]
-                    });
+                    formik.setFieldValue(
+                      `assignedTo.${worker}`,
+                      _.defaults(value, formik.values.assignedTo[worker])
+                    );
+
+                    // formik.setFieldValue(
+                    //   `assignedTo.${worker}`,
+                    //   {
+                    //     ...value,
+                    //     ...formik.values.assignedTo[worker]
+                    //   },
+                    //   worker
+                    // );
+
+                    setSelectedWorkers(
+                      _.unionBy(selectedWorkers, [value], "value")
+                    );
                   }}
                   onBlur={() => {
                     formik.setFieldTouched(`assignedTo.${worker}`, true);
