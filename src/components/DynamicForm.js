@@ -65,7 +65,7 @@ const DynamicForm = () => {
     let updatedSchema = { ...assinedToSchema };
     let newSchema = {
       [`${Id}`]: yup.object().shape({
-        value: yup.string().required(`${Id} is Required`)
+        value: yup.string().required(`${lead ? "lead" : "worker"} is required`)
       })
     };
     updatedSchema = { ...updatedSchema, ...newSchema };
