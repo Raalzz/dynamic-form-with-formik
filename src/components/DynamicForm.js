@@ -90,11 +90,11 @@ const DynamicForm = () => {
 
   //Function to Remove Field
   const removeWorkerField = workerId => {
-    setSelectedWorkers(
-      selectedWorkers.filter(
-        obj => obj.value !== formik.values.assignedTo[workerId].value
-      )
-    );
+    // setSelectedWorkers(
+    //   selectedWorkers.filter(
+    //     obj => obj.value !== formik.values.assignedTo[workerId].value
+    //   )
+    // );
     let oldSchema = { ...assinedToSchema };
     delete oldSchema[workerId];
     setAssinedToSchema(oldSchema);
@@ -173,9 +173,9 @@ const DynamicForm = () => {
                     //   worker
                     // );
 
-                    setSelectedWorkers(
-                      _.unionBy(selectedWorkers, [value], "value")
-                    );
+                    // setSelectedWorkers(
+                    //   _.unionBy(selectedWorkers, [value], "value")
+                    // );
                   }}
                   onBlur={() => {
                     formik.setFieldTouched(`assignedTo.${worker}`, true);
