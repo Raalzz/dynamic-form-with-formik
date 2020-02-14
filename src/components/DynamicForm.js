@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";
+import validationSchema from "./validationSchema";
 
 const DynamicForm = () => {
   const [assinedToDeleteMode, setAssinedToDeleteMode] = useState(false);
@@ -40,19 +41,31 @@ const DynamicForm = () => {
     return _.xorBy(OptionsData, selectedWorkers, "value");
   };
 
-  //Validation Schema
-  const Schema = yup.object().shape({
-    assignedTo: yup.object().shape({ ...assinedToSchema })
-  });
-
   const formik = useFormik({
     initialValues: initialValueState,
-    validationSchema: Schema,
+    validationSchema: validationSchema(assinedToSchema),
     onSubmit: values => {
       console.log("Formik values", formik);
       console.log("onSubmit values", values);
     }
   });
+
+  // console.log("formik", formik.values);
+  useEffect(() => {
+    // https://github.com/jaredpalmer/formik/issues/529#issuecomment-571294217
+    setSelectedWorkers(
+      Object.keys(formik.values.assignedTo)
+        .filter(
+          worker =>
+            formik.values.assignedTo[worker].label &&
+            formik.values.assignedTo[worker].value
+        ) // Filter out the lead is yet to be selected
+        .map(worker => ({
+          label: formik.values.assignedTo[worker].label,
+          value: formik.values.assignedTo[worker].value
+        }))
+    );
+  }, [formik.values.assignedTo]);
 
   //Function to Add Field
   const addWorkerField = (lead = false) => {
@@ -163,19 +176,6 @@ const DynamicForm = () => {
                       `assignedTo.${worker}`,
                       _.defaults(value, formik.values.assignedTo[worker])
                     );
-
-                    // formik.setFieldValue(
-                    //   `assignedTo.${worker}`,
-                    //   {
-                    //     ...value,
-                    //     ...formik.values.assignedTo[worker]
-                    //   },
-                    //   worker
-                    // );
-
-                    // setSelectedWorkers(
-                    //   _.unionBy(selectedWorkers, [value], "value")
-                    // );
                   }}
                   onBlur={() => {
                     formik.setFieldTouched(`assignedTo.${worker}`, true);
