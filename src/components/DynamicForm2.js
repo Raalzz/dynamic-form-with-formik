@@ -7,7 +7,7 @@ import shortid from "shortid";
 import _ from "lodash";
 import validationSchema from "./validationSchema";
 
-const DynamicForm = () => {
+const DynamicForm2 = () => {
   const [assignedToDeleteMode, setAssignedToDeleteMode] = useState(false);
   const [initialValueState, setInitialValueState] = useState({
     assignedTo: {}
@@ -160,46 +160,51 @@ const DynamicForm = () => {
           </button>
         )}
       </div>
-      <br />
       <div>
         {!_.isEmpty(formik.values.assignedTo) &&
           Object.keys(formik.values.assignedTo).map(worker => {
             return (
-              <div key={worker}>
-                <label>
-                  {formik.values.assignedTo[worker].lead ? "Lead" : "Worker"}
-                </label>
-                <Select
-                  options={Options()}
-                  onChange={value => {
-                    formik.setFieldValue(
-                      `assignedTo.${worker}`,
-                      _.defaults(value, formik.values.assignedTo[worker])
-                    );
-                  }}
-                  onBlur={() => {
-                    formik.setFieldTouched(`assignedTo.${worker}`, true);
-                  }}
-                  value={formik.values.assignedTo[worker]}
-                  placeholder="Select Option"
-                  isClearable={false}
-                  isMulti={false}
-                />
-                {formik.errors.assignedTo &&
-                formik.errors.assignedTo[worker] &&
-                formik.touched.assignedTo &&
-                formik.touched.assignedTo[worker] ? (
-                  <div>{formik.errors.assignedTo[worker].value}</div>
-                ) : null}
-                {assignedToDeleteMode &&
-                  !formik.values.assignedTo[worker].lead && (
-                    <span
-                      className="actions"
-                      onClick={() => removeWorkerField(worker)}
-                    >
-                      <FiX />
-                    </span>
-                  )}
+              <div class="card">
+                <div class="container">
+                  <div key={worker}>
+                    <label>
+                      {formik.values.assignedTo[worker].lead
+                        ? "Lead"
+                        : "Worker"}
+                    </label>
+                    <Select
+                      options={Options()}
+                      onChange={value => {
+                        formik.setFieldValue(
+                          `assignedTo.${worker}`,
+                          _.defaults(value, formik.values.assignedTo[worker])
+                        );
+                      }}
+                      onBlur={() => {
+                        formik.setFieldTouched(`assignedTo.${worker}`, true);
+                      }}
+                      value={formik.values.assignedTo[worker]}
+                      placeholder="Select Option"
+                      isClearable={false}
+                      isMulti={false}
+                    />
+                    {formik.errors.assignedTo &&
+                    formik.errors.assignedTo[worker] &&
+                    formik.touched.assignedTo &&
+                    formik.touched.assignedTo[worker] ? (
+                      <div>{formik.errors.assignedTo[worker].value}</div>
+                    ) : null}
+                    {assignedToDeleteMode &&
+                      !formik.values.assignedTo[worker].lead && (
+                        <span
+                          className="actions"
+                          onClick={() => removeWorkerField(worker)}
+                        >
+                          <FiX />
+                        </span>
+                      )}
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -209,4 +214,4 @@ const DynamicForm = () => {
   );
 };
 
-export default DynamicForm;
+export default DynamicForm2;
