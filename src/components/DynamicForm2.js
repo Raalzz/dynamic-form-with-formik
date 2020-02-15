@@ -8,123 +8,125 @@ import _ from "lodash";
 import validationSchema from "./validationSchema";
 
 const DynamicForm2 = () => {
-  const [assignedToDeleteMode, setAssignedToDeleteMode] = useState(false);
+  const [locationsDeleteMode, setLocationsDeleteMode] = useState(false);
   const [initialValueState, setInitialValueState] = useState({
-    assignedTo: {}
+    locations: {}
   });
-  const [assignedToSchema, setAssignedToSchema] = useState({});
-  const [selectedWorkers, setSelectedWorkers] = useState([]);
+  const [locationsSchema, setLocationsSchema] = useState({});
+  const [selectedLocations, setSelectedLocations] = useState([]);
 
   const OptionsData = [
     {
-      label: "worker1",
-      value: "worker1"
+      label: "location1",
+      value: "location1"
     },
     {
-      label: "worker2",
-      value: "worker2"
+      label: "location2",
+      value: "location2"
     },
     {
-      label: "worker3",
-      value: "worker3"
+      label: "location3",
+      value: "location3"
     }
   ];
 
   const formik = useFormik({
     initialValues: initialValueState,
-    validationSchema: validationSchema(assignedToSchema),
+    validationSchema: validationSchema(locationsSchema),
     onSubmit: values => {
       console.log("Formik values", formik);
       console.log("onSubmit values", values);
     }
   });
 
-  //Create Lead Worker initially
+  //Create Lead Location initially
   useEffect(() => {
-    if (_.isEmpty(initialValueState.assignedTo)) {
-      addWorkerField(true);
+    if (_.isEmpty(initialValueState.locations)) {
+      addLocationField(true);
     }
   }, []);
 
   useEffect(() => {
     // https://github.com/jaredpalmer/formik/issues/529#issuecomment-571294217
-    setSelectedWorkers(
-      Object.keys(formik.values.assignedTo)
+    setSelectedLocations(
+      Object.keys(formik.values.locations)
         .filter(
-          worker =>
-            formik.values.assignedTo[worker].label &&
-            formik.values.assignedTo[worker].value
+          location =>
+            formik.values.locations[location].label &&
+            formik.values.locations[location].value
         ) // Filter out the lead is yet to be selected
-        .map(worker => ({
-          label: formik.values.assignedTo[worker].label,
-          value: formik.values.assignedTo[worker].value
+        .map(location => ({
+          label: formik.values.locations[location].label,
+          value: formik.values.locations[location].value
         }))
     );
-  }, [formik.values.assignedTo]);
+  }, [formik.values.locations]);
 
   const Options = () => {
-    return _.xorBy(OptionsData, selectedWorkers, "value");
+    return _.xorBy(OptionsData, selectedLocations, "value");
   };
 
   //Function to Add Field
-  const addWorkerField = (lead = false) => {
-    let Id = `assignedTo${shortid.generate()}`;
+  const addLocationField = (lead = false) => {
+    let Id = `locations${shortid.generate()}`;
     let newInitialValueState = { [`${Id}`]: { lead } };
 
     //To update Initial Values
     let updatedInitValueState = { ...initialValueState };
-    updatedInitValueState.assignedTo = {
-      ...updatedInitValueState.assignedTo,
+    updatedInitValueState.locations = {
+      ...updatedInitValueState.locations,
       ...newInitialValueState
     };
 
     //To update Schema
-    let updatedSchema = { ...assignedToSchema };
+    let updatedSchema = { ...locationsSchema };
     let newSchema = {
       [`${Id}`]: yup.object().shape({
-        value: yup.string().required(`${lead ? "lead" : "worker"} is required`)
+        value: yup
+          .string()
+          .required(`${lead ? "lead" : "location"} is required`)
       })
     };
     updatedSchema = { ...updatedSchema, ...newSchema };
 
     //Get current values from the formik and add new field to it
     let updatedFormikValues = { ...formik.values };
-    updatedFormikValues.assignedTo = {
-      ...updatedFormikValues.assignedTo,
+    updatedFormikValues.locations = {
+      ...updatedFormikValues.locations,
       ...newInitialValueState
     };
 
     formik.setValues(updatedFormikValues);
     setInitialValueState(updatedInitValueState);
-    setAssignedToSchema(updatedSchema);
+    setLocationsSchema(updatedSchema);
     return null;
   };
 
   //Function to Remove Field
-  const removeWorkerField = workerId => {
-    //TODO: setSelectedWorkers
-    setSelectedWorkers(
-      selectedWorkers.filter(
-        obj => obj.value !== formik.values.assignedTo[workerId].value
+  const removeLocationField = locationId => {
+    //TODO: setSelectedLocations
+    setSelectedLocations(
+      selectedLocations.filter(
+        obj => obj.value !== formik.values.locations[locationId].value
       )
     );
-    let oldSchema = { ...assignedToSchema };
-    delete oldSchema[workerId];
-    setAssignedToSchema(oldSchema);
-    delete formik.values.assignedTo[workerId];
+    let oldSchema = { ...locationsSchema };
+    delete oldSchema[locationId];
+    setLocationsSchema(oldSchema);
+    delete formik.values.locations[locationId];
     if (
       formik.errors &&
-      formik.errors.assignedTo &&
-      formik.errors.assignedTo[workerId]
+      formik.errors.locations &&
+      formik.errors.locations[locationId]
     ) {
-      delete formik.errors.assignedTo[workerId];
+      delete formik.errors.locations[locationId];
     }
     if (
       formik.touched &&
-      formik.touched.assignedTo &&
-      formik.touched.assignedTo[workerId]
+      formik.touched.locations &&
+      formik.touched.locations[locationId]
     ) {
-      delete formik.touched.assignedTo[workerId];
+      delete formik.touched.locations[locationId];
     }
     return null;
   };
@@ -133,76 +135,72 @@ const DynamicForm2 = () => {
     <form onSubmit={formik.handleSubmit}>
       <h1 style={{ textAlign: "center" }}>Select Form</h1>
       <div>
-        {_.size(formik.values.assignedTo) > 1 ? (
+        {_.size(formik.values.locations) > 1 ? (
           <button
             type="button"
             onClick={() => {
-              if (_.size(initialValueState.assignedTo) > 1) {
-                setAssignedToDeleteMode(!assignedToDeleteMode);
+              if (_.size(initialValueState.locations) > 1) {
+                setLocationsDeleteMode(!locationsDeleteMode);
               }
             }}
           >
-            - Worker
+            - Location
           </button>
         ) : (
           <button type="button" disabled>
-            - Worker
+            - Location
           </button>
         )}
 
-        {_.size(formik.values.assignedTo) < OptionsData.length ? (
-          <button type="button" onClick={() => addWorkerField(false)}>
-            + Worker
+        {_.size(formik.values.locations) < OptionsData.length ? (
+          <button type="button" onClick={() => addLocationField(false)}>
+            + Location
           </button>
         ) : (
           <button type="button" disabled>
-            + Worker
+            + Location
           </button>
         )}
       </div>
       <div>
-        {!_.isEmpty(formik.values.assignedTo) &&
-          Object.keys(formik.values.assignedTo).map(worker => {
+        {!_.isEmpty(formik.values.locations) &&
+          Object.keys(formik.values.locations).map(location => {
             return (
-              <div class="card">
-                <div class="container">
-                  <div key={worker}>
-                    <label>
-                      {formik.values.assignedTo[worker].lead
-                        ? "Lead"
-                        : "Worker"}
-                    </label>
-                    <Select
-                      options={Options()}
-                      onChange={value => {
-                        formik.setFieldValue(
-                          `assignedTo.${worker}`,
-                          _.defaults(value, formik.values.assignedTo[worker])
-                        );
-                      }}
-                      onBlur={() => {
-                        formik.setFieldTouched(`assignedTo.${worker}`, true);
-                      }}
-                      value={formik.values.assignedTo[worker]}
-                      placeholder="Select Option"
-                      isClearable={false}
-                      isMulti={false}
-                    />
-                    {formik.errors.assignedTo &&
-                    formik.errors.assignedTo[worker] &&
-                    formik.touched.assignedTo &&
-                    formik.touched.assignedTo[worker] ? (
-                      <div>{formik.errors.assignedTo[worker].value}</div>
-                    ) : null}
-                    {assignedToDeleteMode &&
-                      !formik.values.assignedTo[worker].lead && (
+              <div className="card">
+                <div className="container">
+                  <div key={location}>
+                    {locationsDeleteMode &&
+                      !formik.values.locations[location].lead && (
                         <span
                           className="actions"
-                          onClick={() => removeWorkerField(worker)}
+                          onClick={() => removeLocationField(location)}
                         >
                           <FiX />
                         </span>
                       )}
+                    <label>{"Location"}</label>
+                    <Select
+                      options={Options()}
+                      onChange={value => {
+                        formik.setFieldValue(
+                          `locations.${location}`,
+                          _.defaults(value, formik.values.locations[location])
+                        );
+                      }}
+                      onBlur={() => {
+                        formik.setFieldTouched(`locations.${location}`, true);
+                      }}
+                      value={formik.values.locations[location]}
+                      placeholder="Select Option"
+                      isClearable={false}
+                      isMulti={false}
+                    />
+                    {formik.errors.locations &&
+                    formik.errors.locations[location] &&
+                    formik.touched.locations &&
+                    formik.touched.locations[location] ? (
+                      <div>{formik.errors.locations[location].value}</div>
+                    ) : null}
                   </div>
                 </div>
               </div>
