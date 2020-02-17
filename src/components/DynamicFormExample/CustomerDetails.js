@@ -5,7 +5,6 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";
-import validationSchema2 from "./validationSchema2";
 
 const locationOptionsData = [
   {
@@ -37,24 +36,16 @@ const contactOptions = [
   }
 ];
 
-const DynamicForm2 = () => {
-  const [initialValueState, setInitialValueState] = useState({
-    locations: {},
-    contacts: {}
-  });
-  const [locationsSchema, setLocationsSchema] = useState({});
-  const [contactSchema, setContactSchema] = useState({});
+const CustomerDetails = ({
+  formik,
+  initialValueState,
+  setInitialValueState,
+  locationsSchema,
+  setLocationsSchema,
+  contactSchema,
+  setContactSchema
+}) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
-
-  //Formik Initialisation
-  const formik = useFormik({
-    initialValues: initialValueState,
-    validationSchema: validationSchema2(locationsSchema, contactSchema),
-    onSubmit: values => {
-      console.log("Formik values", formik);
-      console.log("onSubmit values", values);
-    }
-  });
 
   //Create One Location Field initially
   useEffect(() => {
@@ -184,10 +175,8 @@ const DynamicForm2 = () => {
     return null;
   };
 
-  console.log("formik", formik);
-
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <div>
       <h1 style={{ textAlign: "center" }}>Select Form</h1>
       <div>
         {_.size(formik.values.locations) > 1 ? (
@@ -309,9 +298,8 @@ const DynamicForm2 = () => {
             </div>
           );
         })}
-      <button type="submit">Submit</button>
-    </form>
+    </div>
   );
 };
 
-export default DynamicForm2;
+export default CustomerDetails;

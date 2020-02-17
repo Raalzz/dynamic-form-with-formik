@@ -1,10 +1,10 @@
 import * as yup from "yup";
 
-const validationSchema2 = (locationsSchema, contactSchema) => {
+const validationSchema = (locationsSchema, contactSchema) => {
   return yup.object().shape({
     locations: yup.object().shape({ ...locationsSchema }),
     contacts: yup.object().shape({ ...contactSchema })
   });
 };
 
-export default validationSchema2;
+export default validationSchema;

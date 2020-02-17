@@ -1,10 +1,10 @@
 import React from "react";
-import DynamicForm2 from "./components/DynamicForm2";
+import DynamicForm from "./components/DynamicFormExample/DynamicForm";
 
 const App = () => {
   return (
     <div>
-      <DynamicForm2 />
+      <DynamicForm />
     </div>
   );
 };
