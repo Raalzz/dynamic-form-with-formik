@@ -5,44 +5,61 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";
-import validationSchema from "./validationSchema";
+import validationSchema2 from "./validationSchema2";
+
+const locationOptionsData = [
+  {
+    label: "location1",
+    value: "location1"
+  },
+  {
+    label: "location2",
+    value: "location2"
+  },
+  {
+    label: "location3",
+    value: "location3"
+  }
+];
+
+const contactOptions = [
+  {
+    label: "contact1",
+    value: "contact1"
+  },
+  {
+    label: "contact2",
+    value: "contact2"
+  },
+  {
+    label: "contact3",
+    value: "contact3"
+  }
+];
 
 const DynamicForm2 = () => {
-  const [locationsDeleteMode, setLocationsDeleteMode] = useState(false);
   const [initialValueState, setInitialValueState] = useState({
-    locations: {}
+    locations: {},
+    contacts: {}
   });
   const [locationsSchema, setLocationsSchema] = useState({});
+  const [contactSchema, setContactSchema] = useState({});
   const [selectedLocations, setSelectedLocations] = useState([]);
 
-  const OptionsData = [
-    {
-      label: "location1",
-      value: "location1"
-    },
-    {
-      label: "location2",
-      value: "location2"
-    },
-    {
-      label: "location3",
-      value: "location3"
-    }
-  ];
-
+  //Formik Initialisation
   const formik = useFormik({
     initialValues: initialValueState,
-    validationSchema: validationSchema(locationsSchema),
+    validationSchema: validationSchema2(locationsSchema, contactSchema),
     onSubmit: values => {
       console.log("Formik values", formik);
       console.log("onSubmit values", values);
     }
   });
 
-  //Create Lead Location initially
+  //Create One Location Field initially
   useEffect(() => {
     if (_.isEmpty(initialValueState.locations)) {
-      addLocationField(true);
+      addLocationField();
     }
   }, []);
 
@@ -62,58 +79,92 @@ const DynamicForm2 = () => {
     );
   }, [formik.values.locations]);
 
-  const Options = () => {
-    return _.xorBy(OptionsData, selectedLocations, "value");
+  const locationOptions = () => {
+    return _.xorBy(locationOptionsData, selectedLocations, "value");
   };
 
   //Function to Add Field
-  const addLocationField = (lead = false) => {
-    let Id = `locations${shortid.generate()}`;
-    let newInitialValueState = { [`${Id}`]: { lead } };
+  const addLocationField = () => {
+    //generate temporary uinque id
+    let shortId = shortid.generate();
+    let locationShortId = `locations${shortId}`;
+    let contactShortId = `contacts${shortId}`;
+    let locationInitialValueState = {
+      [`${locationShortId}`]: {
+        [`${contactShortId}`]: {}
+      }
+    };
+    let contactInitialValueState = { [`${contactShortId}`]: {} };
 
     //To update Initial Values
-    let updatedInitValueState = { ...initialValueState };
-    updatedInitValueState.locations = {
-      ...updatedInitValueState.locations,
-      ...newInitialValueState
+    let updatedLocationInitValueState = { ...initialValueState };
+    updatedLocationInitValueState.locations = {
+      ...updatedLocationInitValueState.locations,
+      ...locationInitialValueState
+    };
+    let updatedContactInitValueState = { ...updatedLocationInitValueState };
+    updatedContactInitValueState.contacts = {
+      ...updatedContactInitValueState.contacts,
+      ...contactInitialValueState
     };
 
     //To update Schema
-    let updatedSchema = { ...locationsSchema };
-    let newSchema = {
-      [`${Id}`]: yup.object().shape({
-        value: yup
-          .string()
-          .required(`${lead ? "lead" : "location"} is required`)
+    let updatedLocationSchema = { ...locationsSchema };
+    let newLocationSchema = {
+      [`${locationShortId}`]: yup.object().shape({
+        value: yup.string().required("location is required")
       })
     };
-    updatedSchema = { ...updatedSchema, ...newSchema };
+    updatedLocationSchema = { ...updatedLocationSchema, ...newLocationSchema };
 
-    //Get current values from the formik and add new field to it
-    let updatedFormikValues = { ...formik.values };
-    updatedFormikValues.locations = {
-      ...updatedFormikValues.locations,
-      ...newInitialValueState
+    let updatedContactSchema = { ...contactSchema };
+    let newContactSchema = {
+      [`${contactShortId}`]: yup.object().shape({
+        value: yup.string().required("contact is required")
+      })
     };
 
-    formik.setValues(updatedFormikValues);
-    setInitialValueState(updatedInitValueState);
-    setLocationsSchema(updatedSchema);
+    updatedContactSchema = { ...updatedContactSchema, ...newContactSchema };
+
+    //To update Formik Values
+    //Get current values from the formik and add new field to it
+    let updatedFormikLocationValues = { ...formik.values };
+    updatedFormikLocationValues.locations = {
+      ...updatedFormikLocationValues.locations,
+      ...locationInitialValueState
+    };
+
+    let updatedFormikContactValues = { ...updatedFormikLocationValues };
+    updatedFormikContactValues.contacts = {
+      ...updatedFormikContactValues.contacts,
+      ...contactInitialValueState
+    };
+
+    //Update All Required States
+    formik.setValues(updatedFormikContactValues); //formik State
+    setInitialValueState(updatedContactInitValueState); //initialValue State
+    setLocationsSchema(updatedLocationSchema); //location Schema
+    setContactSchema(updatedContactSchema); //contact Schema
     return null;
   };
 
   //Function to Remove Field
   const removeLocationField = locationId => {
-    //TODO: setSelectedLocations
+    console.log(locationId);
+    // TODO: setSelectedLocations;
     setSelectedLocations(
       selectedLocations.filter(
         obj => obj.value !== formik.values.locations[locationId].value
       )
     );
+
+    //Update New Schema
     let oldSchema = { ...locationsSchema };
     delete oldSchema[locationId];
     setLocationsSchema(oldSchema);
     delete formik.values.locations[locationId];
+
+    //Update Errors Array
     if (
       formik.errors &&
       formik.errors.locations &&
@@ -121,6 +172,8 @@ const DynamicForm2 = () => {
     ) {
       delete formik.errors.locations[locationId];
     }
+
+    //Update Touched Fields
     if (
       formik.touched &&
       formik.touched.locations &&
@@ -131,6 +184,8 @@ const DynamicForm2 = () => {
     return null;
   };
 
+  console.log("formik", formik);
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <h1 style={{ textAlign: "center" }}>Select Form</h1>
@@ -140,7 +195,8 @@ const DynamicForm2 = () => {
             type="button"
             onClick={() => {
               if (_.size(initialValueState.locations) > 1) {
-                setLocationsDeleteMode(!locationsDeleteMode);
+                // setLocationsDeleteMode(!locationsDeleteMode);
+                //This Function should be removed if there is a carasoul
               }
             }}
           >
@@ -152,7 +208,7 @@ const DynamicForm2 = () => {
           </button>
         )}
 
-        {_.size(formik.values.locations) < OptionsData.length ? (
+        {_.size(formik.values.locations) < locationOptionsData.length ? (
           <button type="button" onClick={() => addLocationField(false)}>
             + Location
           </button>
@@ -162,51 +218,97 @@ const DynamicForm2 = () => {
           </button>
         )}
       </div>
-      <div>
-        {!_.isEmpty(formik.values.locations) &&
-          Object.keys(formik.values.locations).map(location => {
-            return (
-              <div className="card">
-                <div className="container">
-                  <div key={location}>
-                    {locationsDeleteMode &&
-                      !formik.values.locations[location].lead && (
-                        <span
-                          className="actions"
-                          onClick={() => removeLocationField(location)}
-                        >
-                          <FiX />
-                        </span>
-                      )}
-                    <label>{"Location"}</label>
-                    <Select
-                      options={Options()}
-                      onChange={value => {
-                        formik.setFieldValue(
-                          `locations.${location}`,
-                          _.defaults(value, formik.values.locations[location])
-                        );
-                      }}
-                      onBlur={() => {
-                        formik.setFieldTouched(`locations.${location}`, true);
-                      }}
-                      value={formik.values.locations[location]}
-                      placeholder="Select Option"
-                      isClearable={false}
-                      isMulti={false}
-                    />
-                    {formik.errors.locations &&
-                    formik.errors.locations[location] &&
-                    formik.touched.locations &&
-                    formik.touched.locations[location] ? (
-                      <div>{formik.errors.locations[location].value}</div>
-                    ) : null}
-                  </div>
+
+      {!_.isEmpty(formik.values.locations) &&
+        Object.keys(formik.values.locations).map(location => {
+          return (
+            <div className="card" key={location}>
+              <div className="container">
+                <span
+                  className="actions"
+                  onClick={() => removeLocationField(location)}
+                >
+                  <FiX />
+                </span>
+
+                <div>
+                  <label>{"Location"}</label>
+                  <Select
+                    options={locationOptions()}
+                    onChange={value => {
+                      formik.setFieldValue(
+                        `locations.${location}`,
+                        _.defaults(value, formik.values.locations[location])
+                      );
+                    }}
+                    onBlur={() => {
+                      formik.setFieldTouched(`locations.${location}`, true);
+                    }}
+                    value={formik.values.locations[location]}
+                    placeholder="Select Option"
+                    isClearable={false}
+                    isMulti={false}
+                  />
+                  {formik.errors.locations &&
+                  formik.errors.locations[location] &&
+                  formik.touched.locations &&
+                  formik.touched.locations[location] ? (
+                    <div>{formik.errors.locations[location].value}</div>
+                  ) : null}
+                </div>
+                <div>
+                  <label>{"Contact"}</label>
+                  <Select
+                    options={contactOptions}
+                    onChange={value => {
+                      formik.setFieldValue(
+                        `contacts.${"contacts" +
+                          location.split("locations").pop()}`,
+                        _.defaults(
+                          value,
+                          formik.values.contacts[
+                            "contacts" + location.split("locations").pop()
+                          ]
+                        )
+                      );
+                    }}
+                    onBlur={() => {
+                      formik.setFieldTouched(
+                        `contacts.${"contacts" +
+                          location.split("locations").pop()}`,
+                        true
+                      );
+                    }}
+                    value={
+                      formik.values.contacts[
+                        "contacts" + location.split("locations").pop()
+                      ]
+                    }
+                    placeholder="Select Option"
+                    isClearable={false}
+                    isMulti={false}
+                  />
+                  {formik.errors.contacts &&
+                  formik.errors.contacts[
+                    "contacts" + location.split("locations").pop()
+                  ] &&
+                  formik.touched.contacts &&
+                  formik.touched.contacts[
+                    "contacts" + location.split("locations").pop()
+                  ] ? (
+                    <div>
+                      {
+                        formik.errors.contacts[
+                          "contacts" + location.split("locations").pop()
+                        ].value
+                      }
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            );
-          })}
-      </div>
+            </div>
+          );
+        })}
       <button type="submit">Submit</button>
     </form>
   );
