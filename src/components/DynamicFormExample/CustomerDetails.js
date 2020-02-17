@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { FiX } from "react-icons/fi";
-import { useFormik } from "formik";
 import * as yup from "yup";
 import shortid from "shortid";
 import _ from "lodash";

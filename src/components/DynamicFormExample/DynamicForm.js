@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
-import _ from "lodash";
 import validationSchema from "./ValidationSchema";
 
 import CustomerDetails from "./CustomerDetails";
